@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
-import type { Record } from "@/lib/api";
+import type { Record, RecordCreate, RecordUpdate } from "@/lib/api";
+import { demoStore } from "@/lib/demo-store";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Wifi, WifiOff } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -41,16 +43,25 @@ export function RecordList() {
   const [error, setError] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [editRecord, setEditRecord] = useState<Record | null>(null);
+  const [mode, setMode] = useState<"live" | "demo" | "checking">("checking");
 
   const fetchRecords = useCallback(async () => {
     try {
-      setLoading(true);
-      setError(null);
       const data = await api.records.list();
       setRecords(data.items);
       setTotal(data.total);
+      setError(null);
+      setMode("live");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch records");
+      const demo = demoStore.list();
+      setRecords(demo.items);
+      setTotal(demo.total);
+      setMode("demo");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to fetch records — backend unreachable"
+      );
     } finally {
       setLoading(false);
     }
@@ -65,7 +76,7 @@ export function RecordList() {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    if (hasPending) {
+    if (hasPending && mode === "live") {
       pollRef.current = setInterval(async () => {
         try {
           const data = await api.records.list();
@@ -79,11 +90,15 @@ export function RecordList() {
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
     };
-  }, [hasPending]);
+  }, [hasPending, mode]);
 
-  const handleCreate = async (data: Parameters<typeof api.records.create>[0]) => {
+  const handleCreate = async (data: RecordCreate) => {
     try {
-      await api.records.create(data);
+      if (mode === "live") {
+        await api.records.create(data);
+      } else {
+        demoStore.create(data);
+      }
       setShowCreate(false);
       fetchRecords();
     } catch (err) {
@@ -91,10 +106,14 @@ export function RecordList() {
     }
   };
 
-  const handleUpdate = async (data: Parameters<typeof api.records.update>[1]) => {
+  const handleUpdate = async (data: RecordUpdate) => {
     if (!editRecord) return;
     try {
-      await api.records.update(editRecord.id, data);
+      if (mode === "live") {
+        await api.records.update(editRecord.id, data);
+      } else {
+        demoStore.update(editRecord.id, data);
+      }
       setEditRecord(null);
       fetchRecords();
     } catch (err) {
@@ -104,7 +123,11 @@ export function RecordList() {
 
   const handleDelete = async (id: string) => {
     try {
-      await api.records.delete(id);
+      if (mode === "live") {
+        await api.records.delete(id);
+      } else {
+        demoStore.delete(id);
+      }
       fetchRecords();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete record");
@@ -117,7 +140,19 @@ export function RecordList() {
 
   return (
     <div className="space-y-4">
-      {error && (
+      {mode === "demo" && (
+        <div className="flex items-center justify-between gap-4 rounded-md border border-primary/30 bg-primary/10 px-4 py-3">
+          <p className="flex items-center gap-2 text-sm text-foreground">
+            <WifiOff className="h-4 w-4 shrink-0 text-primary" />
+            Backend not connected — running in <strong>demo mode</strong>. Data
+            is stored locally in your browser.
+          </p>
+          <Button variant="outline" size="sm" onClick={() => fetchRecords()}>
+            Retry API
+          </Button>
+        </div>
+      )}
+      {error && mode === "live" && (
         <div className="flex items-center justify-between rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3">
           <p className="text-sm text-destructive">{error}</p>
           <Button variant="outline" size="sm" onClick={() => setError(null)}>
@@ -127,7 +162,15 @@ export function RecordList() {
       )}
 
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">{total} record(s)</p>
+        <p className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>{total} record(s)</span>
+          {mode === "live" && (
+            <Badge variant="secondary" className="gap-1">
+              <Wifi className="h-3 w-3" />
+              Live API
+            </Badge>
+          )}
+        </p>
         <Button onClick={() => setShowCreate(true)}>Create Record</Button>
       </div>
 

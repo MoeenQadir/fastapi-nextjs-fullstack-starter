@@ -1,7 +1,11 @@
 {
-  "name": "web",
-  "version": "0.1.0",
+  "name": "moeendev-console",
+  "version": "2.0.0",
   "private": true,
+  "description": "MoeenDev — Full-Stack Operations Console (Next.js + FastAPI demo)",
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

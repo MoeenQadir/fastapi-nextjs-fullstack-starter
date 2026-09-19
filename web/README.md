@@ -1,47 +1,48 @@
-# Web Service (Next.js)
+# MoeenDev — Full-Stack Operations Console
 
-Frontend application for the starter template.
+A production-ready full-stack operations console by **MoeenDev**, built with:
 
-## What it does
-
-- Renders the UI using React Server Components + App Router
-- Provides CRUD interface for managing Records
-- Displays API health status and app configuration
-- Communicates with the API service via REST
-
-## Pages
-
-| Path | Description |
-|------|-------------|
-| `/` | Welcome / dashboard page |
-| `/records` | CRUD table for records |
-| `/status` | API health check |
-| `/settings` | App info and config display |
-
-## How it connects
-
-- **Browser requests**: `/api/*` routes are proxied server-side to the API via `BACKEND_URL`
-- **Server-side requests**: Next.js calls the API directly via `BACKEND_URL`
-
-## Environment Variables
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `BACKEND_URL` | `http://localhost:8000` | API URL (used by the proxy and server-side requests) |
+- **Next.js 16** (App Router, React 19, TypeScript, Tailwind CSS v4)
+- **shadcn/ui** components
+- Demo mode that stores data locally in the browser when the backend is offline
 
 ## Local Development
 
 ```bash
-cp .env.example .env.local
 npm install
 npm run dev
 ```
 
-Or use docker-compose from the root directory.
+Open http://localhost:3000
 
-## How to Extend
+### Run checks
 
-- Add new pages in `src/app/`
-- Add new components in `src/components/`
-- Add shadcn/ui components: `npx shadcn@latest add <component>`
-- Update the API client in `src/lib/api.ts`
+```bash
+npm run lint
+npm run typecheck
+npm run build
+```
+
+## Demo Mode (no backend required)
+
+The console automatically detects when the FastAPI backend is unreachable and
+falls back to an in-browser **demo mode** — records are stored in `localStorage`
+and a banner explains the state. Connect a backend later by setting `BACKEND_URL`
+and the app switches to the live API automatically.
+
+## Deploying to Vercel
+
+1. Push this repository to GitHub.
+2. In Vercel, click **Add New → Project** and import the repo.
+3. Root directory: `web`.
+4. Node.js version: **20+** (auto-detected via `engines`).
+5. (Optional) Add `BACKEND_URL` env var to point at your deployed FastAPI API.
+6. Deploy — then add your domain, e.g. `moeen-fullstack.vercel.app`.
+
+A root-level `vercel.json` already pins the framework and root directory for you.
+
+## API notes
+
+REST endpoints live in the FastAPI backend (`/api/v1/records`, `/health`, …).
+The Next.js `/api/*` routes proxy those requests server-side when `BACKEND_URL`
+is configured.

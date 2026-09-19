@@ -2,14 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ClipboardList, Activity, Settings } from "lucide-react";
+import {
+  Home,
+  ClipboardList,
+  Activity,
+  Settings,
+  Mail,
+  Zap,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "./theme-toggle";
 
 const navItems = [
   { href: "/", label: "Home", icon: Home },
   { href: "/records", label: "Records", icon: ClipboardList },
   { href: "/status", label: "Status", icon: Activity },
   { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/contact", label: "Contact", icon: Mail },
 ];
 
 export function Sidebar() {
@@ -17,9 +26,24 @@ export function Sidebar() {
 
   return (
     <aside className="w-64 border-r bg-sidebar text-sidebar-foreground flex flex-col">
-      <div className="p-6 border-b">
-        <h1 className="text-lg font-semibold">Starter Kit</h1>
-        <p className="text-sm text-muted-foreground">FastAPI + Next.js</p>
+      <div className="p-5 border-b space-y-3">
+        <div className="flex items-center gap-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-cyan-400 text-sm font-bold text-white shadow-lg shadow-violet-500/30">
+            M
+          </span>
+          <div className="min-w-0">
+            <h1 className="text-base font-semibold tracking-tight">MoeenDev</h1>
+            <p className="text-xs text-muted-foreground truncate">
+              Full-Stack Console
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-500/15 to-cyan-400/15 px-2.5 py-1 text-[11px] font-medium text-primary ring-1 ring-primary/20">
+            <Zap className="h-3 w-3" />
+            Next.js 16 · FastAPI
+          </span>
+        </div>
       </div>
       <nav className="flex-1 p-4 space-y-1">
         {navItems.map((item) => (
@@ -38,6 +62,10 @@ export function Sidebar() {
           </Link>
         ))}
       </nav>
+      <div className="flex items-center justify-between border-t p-4">
+        <p className="text-xs text-muted-foreground">MoeenDev v2.0</p>
+        <ThemeToggle />
+      </div>
     </aside>
   );
 }

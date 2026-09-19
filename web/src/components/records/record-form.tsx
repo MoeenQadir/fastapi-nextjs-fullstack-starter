@@ -36,7 +36,7 @@ export function RecordForm({ record, onSubmit, onCancel }: RecordFormProps) {
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Record name"
+          placeholder="Record name (e.g. Ship the CRM dashboard)"
           required
         />
       </div>
